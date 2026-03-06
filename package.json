@@ -1,9 +1,10 @@
 {
-  "name": "ai-web",
+  "name": "gemini-backend",
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
     "express": "^4.19.2",
+    "cors": "^2.8.5",
     "@google/generative-ai": "^0.17.0"
   }
 }
