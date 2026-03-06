@@ -1,31 +1,37 @@
 import express from "express";
-import fetch from "node-fetch";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const app = express();
+
 app.use(express.json());
+app.use(express.static("public"));
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
 
 app.post("/api/chat", async (req, res) => {
 
-    const prompt = req.body.prompt;
+  const prompt = req.body.prompt;
 
-    const ai = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-            "Authorization": "Bearer " + process.env.AI_KEY,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            model: "llama3-70b-8192",
-            messages: [{ role: "user", content: prompt }]
-        })
-    });
+  try {
 
-    const data = await ai.json();
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    res.json({
-        reply: data.choices[0].message.content
-    });
+    const result = await model.generateContent(prompt);
+
+    const response = await result.response;
+    const text = response.text();
+
+    res.json({ reply: text });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "AI request failed" });
+  }
 
 });
 
-app.listen(3000, () => console.log("Server running"));  
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
+});
